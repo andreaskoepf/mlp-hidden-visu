@@ -1,4 +1,6 @@
-# nn hidden visu
+# MLP Hidden Layer Activation Visualization
+
+To gain some intuition about the internal representation of simple multi-layer perceptrons (MLPs) I trained a neural network with [PyTorch](https://pytorch.org/) using a range of different activation functions on a 2D -> 1D function. The training pairs consist of the u,v image coordinates [0, 1]^2 as inputs (first row) and the intensities from a 4x4 checkerboard pattern as targets (last row). The other rows show intensities of neurons in the hidden layers for all the u,v input coordinates (one box=one neuron). The animations show how the neuron responses change over the course of the first 4000 steps trained with Adam (lr=0.01, loss_fn=MSE). For further details please refer to the implementation in [main.py](./main.py).
 
 ## Sigmoid
 ![sigmoid](results/sigmoid_animation.gif)
