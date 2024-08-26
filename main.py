@@ -210,7 +210,10 @@ def main():
             print(i, loss.item())
 
         if i % eval_interval == 0:
-            result = evaluate_model(model, 100, 100)
+            model.eval()  # Set the model to evaluation mode
+            with torch.no_grad():
+                result = evaluate_model(model, 100, 100)
+            model.train()  # Set the model back to training mode
             fn = '{}_{:06d}.png'.format(name, i)
             fn = os.path.join(opt.output_path, fn)
 
