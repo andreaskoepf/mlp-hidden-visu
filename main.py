@@ -35,16 +35,18 @@ class Activation(nn.Module):
         return self.f(x)
 
 
-def create_model(num_layers=4, num_hidden=5, non_linearity=F.relu, normalize=nn.Identity(), num_in=2, num_out=1, dropout_prob=0.0):
+def create_model(num_layers=4, num_hidden=5, non_linearity=F.relu, normalize=nn.Identity(), num_in=2, num_out=1, dropout_prob=0.0, use_residual=False):
     net = []
     for i in range(num_layers):
-        net.append(
-            nn.Sequential(
-                nn.Linear(num_in, num_hidden), 
-                deepcopy(normalize),
-                Activation(non_linearity)
-            )
+        layer = nn.Sequential(
+            nn.Linear(num_in, num_hidden),
+            deepcopy(normalize),
+            Activation(non_linearity)
         )
+        if use_residual and i > 0:
+            net.append(ResidualBlock(layer))
+        else:
+            net.append(layer)
         num_in = num_hidden
     
     if dropout_prob > 0:
@@ -52,6 +54,14 @@ def create_model(num_layers=4, num_hidden=5, non_linearity=F.relu, normalize=nn.
     
     net.append(nn.Linear(num_hidden, num_out))
     return SequentialCapture(net)
+
+class ResidualBlock(nn.Module):
+    def __init__(self, layer):
+        super().__init__()
+        self.layer = layer
+
+    def forward(self, x):
+        return x + self.layer(x)
 
 
 def checkerboard(x, board_size=4):
@@ -118,6 +128,7 @@ def parse_args():
     parser.add_argument('--num_layers', default=5, type=int, help='number of hidden layers')
     parser.add_argument('--num_hiddens', default=8, type=int, help='number of neurons in hidden layers')
     parser.add_argument('--dropout', default=0.0, type=float, help='dropout probability (0 to disable)')
+    parser.add_argument('--use_residual', action='store_true', help='use residual connections between layers')
 
     parser.add_argument('--output_path', default='./results', type=str)
 
@@ -182,7 +193,7 @@ def main():
         os.makedirs(opt.output_path)
 
     # create model
-    model = create_model(num_layers=opt.num_layers, num_hidden=opt.num_hiddens, non_linearity=non_linearity, dropout_prob=opt.dropout)
+    model = create_model(num_layers=opt.num_layers, num_hidden=opt.num_hiddens, non_linearity=non_linearity, dropout_prob=opt.dropout, use_residual=opt.use_residual)
     print('Number of parameters: {}'.format(
         sum([p.data.nelement() for p in model.parameters()])))
 
