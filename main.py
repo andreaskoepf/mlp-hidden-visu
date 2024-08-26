@@ -21,7 +21,8 @@ class SequentialCapture(nn.Module):
         outputs = [x.detach()]
         for l in self.layers:
             x = l(x)
-            outputs.append(x.detach())
+            if not isinstance(l, nn.Dropout):
+                outputs.append(x.detach())
         return x, outputs
 
 
