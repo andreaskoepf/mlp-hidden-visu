@@ -35,6 +35,14 @@ class Activation(nn.Module):
         return self.f(x)
 
 
+class ResidualBlock(nn.Module):
+    def __init__(self, layer):
+        super().__init__()
+        self.layer = layer
+
+    def forward(self, x):
+        return x + self.layer(x)
+
 def create_model(num_layers=4, num_hidden=5, non_linearity=F.relu, normalize=nn.Identity(), num_in=2, num_out=1, dropout_prob=0.0, use_residual=False):
     net = []
     for i in range(num_layers):
@@ -54,14 +62,6 @@ def create_model(num_layers=4, num_hidden=5, non_linearity=F.relu, normalize=nn.
     
     net.append(nn.Linear(num_hidden, num_out))
     return SequentialCapture(net)
-
-class ResidualBlock(nn.Module):
-    def __init__(self, layer):
-        super().__init__()
-        self.layer = layer
-
-    def forward(self, x):
-        return x + self.layer(x)
 
 
 def checkerboard(x, board_size=4):
